@@ -10,7 +10,7 @@ import org.limewire.hello.base.exception.MessageException;
 
 
 public class Cobs {
-	
+
 	/** COBS-encode some data, hiding all the 0s without making it much larger, and return the COBS-encoded data. */
 	public static Data encode(Data d) { Bay bay = new Bay(); encode(bay, d); return bay.data(); }
 	/** COBS-encode some data, hiding all the 0s without making it much larger, and add the COBS-encoded data to bay. */
@@ -19,21 +19,21 @@ public class Cobs {
 
 			// Loop encoding blocks of data
 			while (true) {
-				
+
 				// Look for a 0 byte in the first 254 bytes of data
 				Split split = d.begin(254).split((byte)0);
-				
+
 				// Make a block
 				bay.add((byte)(split.before.size() + 1)); // The first byte is the size of the whole block
 				bay.add(split.before);                    // Add the data
-				
+
 				// Point d at the data that remains for us to encode in the next loop
 				d = d.after(split.before.size() + split.tag.size());
-				
+
 				// If we didn't find a 0, there's no data for next time, and we didn't just add a full block, we're done
 				if (!split.found && d.isEmpty() && split.before.size() != 254) return;
 			}
-			
+
 		} catch (ChopException e) { throw new CodeException(); } // There is a mistake in the code in this try block
 	}
 
@@ -48,7 +48,7 @@ public class Cobs {
 			// Parse a block
 			int size = Number.toInt(d.start(1), 1); // The first byte tells the block size, make sure it's 1 or more
 			bay.add(d.clip(1, size - 1));           // Get the block's data, throw ChopException if d doesn't have it all
-			
+
 			// Move beyond it
 			d = d.after(size);
 			if (d.isEmpty()) return; // If we're out of data, we're done
